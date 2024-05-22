@@ -8,3 +8,6 @@ value,label
 6,Non-home-based work
 7,Non-home-based non-work
 995,Missing response
+1000,-CUSTOM AGGREGATIONS-
+1001,All Home-Based Except HBW
+1002,All Except HBW
