@@ -189,8 +189,8 @@ server <- function(input, output, session) {
                groupTripType == input$groupTripType,
                groupModeTypeBroad == input$groupModeTypeBroad,
                binSize == numeric_binSize) %>%
-        select(binStart, numTripRecords, sumTripWeight, pctTripWeight, cumPctTripWeight)  # Selecting specific columns
-      
+        mutate(rangeLabel = paste0(sprintf("%.2f", binStart), " to ", sprintf("%.2f", binStart + binSize - 0.01))) %>%  # Create a new column with the range label and format numbers
+        select(rangeLabel, numTripRecords, sumTripWeight, pctTripWeight, cumPctTripWeight)  # Select specific columns
       # Display the filtered and selected data
       filtered_data
     })
