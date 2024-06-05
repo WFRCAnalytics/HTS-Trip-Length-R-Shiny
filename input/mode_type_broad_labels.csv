@@ -6,3 +6,5 @@ value,label
 4,Transit
 5,Other
 995,Missing response
+1000,-CUSTOM AGGREGATIONS-
+1001,Walk/Bike/Transit
