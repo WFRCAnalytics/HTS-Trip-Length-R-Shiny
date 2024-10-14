@@ -34,6 +34,9 @@ ui <- dashboardPage(
     )
   ),
   dashboardSidebar(
+    radioButtons("dataSource", "Display:",
+                 choices = list("Trip Length" = "dataLengths", "Trip Duration" = "dataDurations"),
+                 selected = "dataLengths"),
     selectInput("groupSampleSegment", "Sample Segment Group:",
                 choices = setNames(labelsSampleSegmentGroups$value, labelsSampleSegmentGroups$label)),
     selectInput("groupModeTypeBroad", "Travel Mode:",
@@ -132,7 +135,7 @@ server <- function(input, output, session) {
     # Handle plot rendering
     output$dataPlot <- renderPlot({
       # Placeholder data processing; actual logic should match your data structure and needs
-      filtered_data <- data %>%
+      selected_data <- get(input$dataSource) %>%
         filter(groupSampleSegment == input$groupSampleSegment,
                groupNumWorkers == input$groupNumWorkers,
                groupNumVehicles == input$groupNumVehicles,
@@ -143,28 +146,28 @@ server <- function(input, output, session) {
       lowerlimit <- -0.5 * numeric_binSize
       
       if (input$typeChart == "histogram") {
-        ggplot(filtered_data, aes(x = binStart + numeric_binSize / 2, y = pctTripWeight)) +
+        ggplot(selected_data, aes(x = binStart + numeric_binSize / 2, y = pctTripWeight)) +
           geom_bar(stat = "identity", position = "dodge", fill = "steelblue", width = numeric_binSize) +
           scale_x_continuous(limits = c(lowerlimit, numeric_maxX + numeric_binSize / 2),
                              breaks = seq(0, numeric_maxX, by = 5)) +
-          labs(title = "Trip Length Histogram",
-               x = "Distance (miles)",
+          labs(title = paste("Trip", ifelse(input$dataSource == "dataLengths", "Length", "Duration"), "Histogram"),
+               x = ifelse(input$dataSource == "dataLengths", "Distance (miles)", "Duration (minutes)"),
                y = "Percentage")
       } else if (input$typeChart == "records") {
-        ggplot(filtered_data, aes(x = binStart + numeric_binSize / 2, y = numTripRecords)) +
+        ggplot(selected_data, aes(x = binStart + numeric_binSize / 2, y = numTripRecords)) +
           geom_bar(stat = "identity", position = "dodge", fill = "steelblue", width = numeric_binSize) +
           scale_x_continuous(limits = c(lowerlimit, numeric_maxX + numeric_binSize / 2),
                              breaks = seq(0, numeric_maxX, by = 5)) +
-          labs(title = "Number of Records by Bin",
-               x = "Distance (miles)",
+          labs(title = paste("Number of Records by", ifelse(input$dataSource == "dataLengths", "Length", "Duration")),
+               x = ifelse(input$dataSource == "dataLengths", "Distance (miles)", "Duration (minutes)"),
                y = "Records")
       } else {
-        ggplot(filtered_data, aes(x = binStart, y = cumPctTripWeight)) +
+        ggplot(selected_data, aes(x = binStart, y = cumPctTripWeight)) +
           geom_line() +
           scale_x_continuous(limits = c(lowerlimit, numeric_maxX),
                              breaks = seq(0, numeric_maxX, by = 5)) +
-          labs(title = "Trip Length Cumulative Distribution",
-               x = "Distance (miles)",
+          labs(title = paste("Trip", ifelse(input$dataSource == "dataLengths", "Length", "Duration"), "Cumulative Distribution"),
+               x = ifelse(input$dataSource == "dataLengths", "Distance (miles)", "Duration (minutes)"),
                y = "Cumulative Percentage")
       }
     })
@@ -182,7 +185,7 @@ server <- function(input, output, session) {
     
     output$dataTable <- renderTable({
       # Placeholder for your data table logic
-      filtered_data <- data %>%
+      selected_data_table <- get(input$dataSource) %>%
         filter(groupSampleSegment == input$groupSampleSegment,
                groupNumWorkers == input$groupNumWorkers,
                groupNumVehicles == input$groupNumVehicles,
@@ -192,7 +195,7 @@ server <- function(input, output, session) {
         mutate(rangeLabel = paste0(sprintf("%.2f", binStart), " to ", sprintf("%.2f", binStart + binSize - 0.01))) %>%  # Create a new column with the range label and format numbers
         select(rangeLabel, numTripRecords, sumTripWeight, pctTripWeight, cumPctTripWeight)  # Select specific columns
       # Display the filtered and selected data
-      filtered_data
+      selected_data_table
     })
   })
 }
