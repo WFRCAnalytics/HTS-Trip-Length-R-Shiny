@@ -34,6 +34,8 @@ ui <- dashboardPage(
     )
   ),
   dashboardSidebar(
+    selectInput("dataSource", "Display:",
+                 choices = setNames(dataDurations$value, dataDurations$label)),
     selectInput("groupSampleSegment", "Sample Segment Group:",
                 choices = setNames(labelsSampleSegmentGroups$value, labelsSampleSegmentGroups$label)),
     selectInput("groupModeTypeBroad", "Travel Mode:",

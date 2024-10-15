@@ -1,4 +1,5 @@
-data <- read_csv("input/hts-trip-lengths.csv")
+dataDurations <- read_csv("input/hts-trip-durations.csv")
+dataLengths <- read_csv("input/hts-trip-lengths.csv")
 labelsModeTypeBroad <- read_csv("input/mode_type_broad_labels.csv")
 labelsNumVehicles <- read_csv("input/num_vehicles_labels.csv")
 labelsNumWorkers <- read_csv("input/num_workers_labels.csv")
