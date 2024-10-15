@@ -1,3 +1,5 @@
+dataDurations <- read_csv("input/hts-trip-durations.csv", show_col_types = FALSE)
+dataLengths <- read_csv("input/hts-trip-lengths.csv", show_col_types = FALSE)
 labelsDisplay <- read_csv("input/display_labels.csv", show_col_types = FALSE)
 labelsModeTypeBroad <- read_csv("input/mode_type_broad_labels.csv", show_col_types = FALSE)
 labelsNumVehicles <- read_csv("input/num_vehicles_labels.csv", show_col_types = FALSE)
@@ -5,13 +7,3 @@ labelsNumWorkers <- read_csv("input/num_workers_labels.csv", show_col_types = FA
 labelsTripType <- read_csv("input/trip_type_labels.csv", show_col_types = FALSE)
 labelsBinSizes <- read_csv("input/bin_sizes_labels.csv", show_col_types = FALSE)
 labelsSampleSegmentGroups <- read_csv("input/sample_segment_groups.csv", show_col_types = FALSE)
-
-
-dataDurations <- read_csv("input/hts-trip-durations.csv", show_col_types = FALSE)
-dataLengths <- read_csv("input/hts-trip-lengths.csv", show_col_types = FALSE)
-
-# Create a named list of data sources
-dataSources <- list(
-  "durations" = dataDurations,
-  "lengths" = dataLengths
-)

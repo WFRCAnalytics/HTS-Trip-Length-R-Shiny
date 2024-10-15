@@ -4,8 +4,8 @@ username: wfrc
 account: wfrc
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
-appId: 11965967
-bundleId: 8705477
+appId: 13025420
+bundleId: 9227138
 url: https://wfrc.shinyapps.io/2023-utah-household-travel-survey-trip-length-distribution/
 version: 1
 asMultiple: FALSE

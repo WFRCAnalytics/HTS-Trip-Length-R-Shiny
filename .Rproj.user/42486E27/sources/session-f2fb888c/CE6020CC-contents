@@ -34,6 +34,9 @@ ui <- dashboardPage(
     )
   ),
   dashboardSidebar(
+    selectInput("dataSource", "Display:",
+                 choices = setNames(labelsDisplay$value, labelsDisplay$label),
+                 selected = "lengths"),
     selectInput("groupSampleSegment", "Sample Segment Group:",
                 choices = setNames(labelsSampleSegmentGroups$value, labelsSampleSegmentGroups$label)),
     selectInput("groupModeTypeBroad", "Travel Mode:",
@@ -87,6 +90,13 @@ ui <- dashboardPage(
 )
 
 server <- function(input, output, session) {
+
+  selectedData <- reactive({
+    req(input$dataSource)
+    data <- dataSources[[input$dataSource]]
+    data
+  })
+  
   # Display the alert when the app is opened
   shinyalert(
     text ="The 2023 Utah Moves household travel survey was designed and conducted for use in regional and statewide travel demand modeling. The sample size and frame is suitable for that purpose.
@@ -131,40 +141,46 @@ server <- function(input, output, session) {
     
     # Handle plot rendering
     output$dataPlot <- renderPlot({
+
       # Placeholder data processing; actual logic should match your data structure and needs
-      filtered_data <- data %>%
+      data <- selectedData() %>%
         filter(groupSampleSegment == input$groupSampleSegment,
                groupNumWorkers == input$groupNumWorkers,
                groupNumVehicles == input$groupNumVehicles,
                groupTripType == input$groupTripType,
                groupModeTypeBroad == input$groupModeTypeBroad,
-               binSize == numeric_binSize)
+               binSize == numeric_binSize) %>%
+        # Filter out rows with NA values in relevant columns to avoid warnings
+        filter(!is.na(binSize), !is.na(pctTripWeight), !is.na(numTripRecords), !is.na(cumPctTripWeight))
       
       lowerlimit <- -0.5 * numeric_binSize
       
+      # Set x-axis label dynamically based on dataSource
+      x_axis_label <- if (input$dataSource == "lengths") "Distance (miles)" else "Duration (minutes)"
+      
       if (input$typeChart == "histogram") {
-        ggplot(filtered_data, aes(x = binStart + numeric_binSize / 2, y = pctTripWeight)) +
+        ggplot(data, aes(x = binStart + numeric_binSize / 2, y = pctTripWeight)) +
           geom_bar(stat = "identity", position = "dodge", fill = "steelblue", width = numeric_binSize) +
           scale_x_continuous(limits = c(lowerlimit, numeric_maxX + numeric_binSize / 2),
                              breaks = seq(0, numeric_maxX, by = 5)) +
           labs(title = "Trip Length Histogram",
-               x = "Distance (miles)",
+               x = x_axis_label,
                y = "Percentage")
       } else if (input$typeChart == "records") {
-        ggplot(filtered_data, aes(x = binStart + numeric_binSize / 2, y = numTripRecords)) +
+        ggplot(data, aes(x = binStart + numeric_binSize / 2, y = numTripRecords)) +
           geom_bar(stat = "identity", position = "dodge", fill = "steelblue", width = numeric_binSize) +
           scale_x_continuous(limits = c(lowerlimit, numeric_maxX + numeric_binSize / 2),
                              breaks = seq(0, numeric_maxX, by = 5)) +
           labs(title = "Number of Records by Bin",
-               x = "Distance (miles)",
+               x = x_axis_label,
                y = "Records")
       } else {
-        ggplot(filtered_data, aes(x = binStart, y = cumPctTripWeight)) +
+        ggplot(data, aes(x = binStart, y = cumPctTripWeight)) +
           geom_line() +
           scale_x_continuous(limits = c(lowerlimit, numeric_maxX),
                              breaks = seq(0, numeric_maxX, by = 5)) +
           labs(title = "Trip Length Cumulative Distribution",
-               x = "Distance (miles)",
+               x = x_axis_label,
                y = "Cumulative Percentage")
       }
     })
@@ -182,7 +198,7 @@ server <- function(input, output, session) {
     
     output$dataTable <- renderTable({
       # Placeholder for your data table logic
-      filtered_data <- data %>%
+      data <- selectedData() %>%
         filter(groupSampleSegment == input$groupSampleSegment,
                groupNumWorkers == input$groupNumWorkers,
                groupNumVehicles == input$groupNumVehicles,
@@ -192,7 +208,7 @@ server <- function(input, output, session) {
         mutate(rangeLabel = paste0(sprintf("%.2f", binStart), " to ", sprintf("%.2f", binStart + binSize - 0.01))) %>%  # Create a new column with the range label and format numbers
         select(rangeLabel, numTripRecords, sumTripWeight, pctTripWeight, cumPctTripWeight)  # Select specific columns
       # Display the filtered and selected data
-      filtered_data
+      data
     })
   })
 }
